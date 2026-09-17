@@ -1,0 +1,41 @@
+{
+  "name": "backend-quick-start",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A reusable Express, TypeScript, and PostgreSQL backend template.",
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:up": "docker-compose up -d",
+    "db:down": "docker-compose down",
+    "db:migrate": "dbmate up",
+    "db:rollback": "dbmate down",
+    "db:status": "dbmate status",
+    "db:generate": "sqlc generate"
+  },
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "pino": "^9.7.0",
+    "postgres": "^3.4.7",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^3.25.42"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.21",
+    "@types/swagger-ui-express": "^4.1.8",
+    "dbmate": "^2.27.0",
+    "pino-pretty": "^13.1.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  }
+}
