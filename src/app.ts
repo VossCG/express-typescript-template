@@ -1,4 +1,5 @@
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
@@ -13,8 +14,10 @@ app.disable('x-powered-by');
 app.use(
   cors({
     origin: env.CORS_ORIGIN,
+    credentials: env.CORS_ORIGIN !== '*',
   }),
 );
+app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 

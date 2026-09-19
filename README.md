@@ -1,6 +1,6 @@
 # Backend Quick Start
 
-可重複使用的 REST API 起始模板，內建 Express 5、TypeScript、Zod、PostgreSQL、sqlc、dbmate、Pino 與 OpenAPI。
+可重複使用的 REST API 起始模板，內建 Express 5、TypeScript、Zod、PostgreSQL、sqlc、dbmate、Pino、OpenAPI，以及 Google Login + JWT 範例。
 
 ## 需求
 
@@ -13,6 +13,7 @@
 ```bash
 npm install
 cp .env.sample .env
+# 編輯 .env：填入 Google OAuth Client ID 與至少 32 字元的 JWT_SECRET
 npm run db:up
 npm run db:migrate
 npm run db:generate
@@ -51,6 +52,20 @@ POST   /api/v1/tasks
 PATCH  /api/v1/tasks/:id
 DELETE /api/v1/tasks/:id
 ```
+
+模板也提供一套最小、可替換的登入流程：
+
+```text
+POST /api/v1/auth/google      以 Google ID token 登入
+POST /api/v1/auth/refresh     輪替 refresh token
+POST /api/v1/auth/logout      登出目前 session
+POST /api/v1/auth/logout-all  撤銷使用者所有 session
+GET  /api/v1/auth/me          取得目前使用者
+```
+
+`/google` 與 `/refresh` 會在 response body 回傳短效 access token；refresh token 僅存放於 `HttpOnly` cookie。呼叫 `/me` 與 `/logout-all` 時，請使用 `Authorization: Bearer <access-token>`。
+
+這是基礎模板，因此刻意未加入角色權限、帳號合併、前端 Google 按鈕、密碼登入、Redis token denylist 與寄信流程。實際產品應依需求擴充，而不是直接假設這些商業規則。
 
 建立 Task：
 
@@ -94,6 +109,7 @@ src/
   repositories/ 封裝資料庫存取
   routes/       HTTP routes 與全域 router 組裝
   schemas/      Zod request、response schema
+  security/     Google token、JWT 與 auth cookie adapter
   services/     商業規則與應用流程
 db/
   migrations/   dbmate migrations
@@ -122,5 +138,14 @@ route → service → repository → sqlc → PostgreSQL
 | `PORT` | HTTP port | `3000` |
 | `CORS_ORIGIN` | 允許的來源 | `*` |
 | `DATABASE_URL` | PostgreSQL 連線字串 | 見 `.env.sample` |
+| `GOOGLE_CLIENT_ID` | Google OAuth Web Client ID，用來驗證 ID token audience | 必填 |
+| `JWT_SECRET` | HS256 簽章密鑰，至少 32 字元 | 必填 |
+| `JWT_ISSUER` | JWT issuer | `backend-template` |
+| `JWT_AUDIENCE` | JWT audience | `backend-template-web` |
+| `JWT_ACCESS_TTL_SECONDS` | access token 有效秒數 | `600` |
+| `JWT_REFRESH_TTL_SECONDS` | refresh token／session 有效秒數 | `2592000` |
+| `REFRESH_COOKIE_NAME` | refresh cookie 名稱 | `refresh_token` |
 
-Compose 中的帳密僅供本機開發；部署時請使用安全的獨立設定。
+Compose 帳密與 `.env.sample` 中的 JWT secret 都僅是本機提示值；部署時請使用 secret manager 產生及保存獨立密鑰。
+
+refresh cookie 預設為 `HttpOnly`、`SameSite=Lax`，production 時開啟 `Secure`，適合同站或同 site 的前後端。若前後端位於不同 site，需改為 `SameSite=None; Secure`，設定明確的 `CORS_ORIGIN`，並另外加入 CSRF 防護；不要搭配萬用字元 origin。
