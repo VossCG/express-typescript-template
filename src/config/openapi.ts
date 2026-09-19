@@ -17,11 +17,12 @@ export const errorResponseSchema = z.object({
   }),
 });
 
+export const baseSuccessResponseSchema = z.object({
+  success: z.literal(true),
+});
+
 export const successResponseSchema = <T extends z.ZodTypeAny>(data: T) =>
-  z.object({
-    success: z.literal(true),
-    data,
-  });
+  baseSuccessResponseSchema.extend({ data });
 
 export const errorResponses = {
   400: {

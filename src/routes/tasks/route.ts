@@ -1,11 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
 
-import {
-  errorResponses,
-  registry,
-  successResponseSchema,
-} from '../../config/openapi';
 import { NotFoundError } from '../../core/ApiError';
 import { sendSuccess } from '../../core/ApiResponse';
 import { sql } from '../../database';
@@ -16,6 +11,7 @@ import {
   listTasks,
   updateTask,
 } from '../../database/sqlc/tasks_sql';
+import { route } from '../../helpers/routeDecorator';
 import { validate } from '../../helpers/validator';
 import {
   CreateTaskInput,
@@ -43,101 +39,60 @@ const serializeTask = (task: TaskRow) => ({
   updatedAt: task.updatedAt.toISOString(),
 });
 
-registry.registerPath({
+route({
   method: 'get',
   path: '/api/v1/tasks',
   tags: ['Tasks'],
   summary: 'List tasks',
-  responses: {
-    200: {
-      description: 'Task list',
-      content: {
-        'application/json': {
-          schema: successResponseSchema(z.array(taskSchema)),
-        },
-      },
-    },
-    500: errorResponses[500],
-  },
+  responseSchema: z.array(taskSchema),
+  responseDescription: 'Task list',
+  errorStatuses: [500],
 });
 
-registry.registerPath({
+route({
   method: 'post',
   path: '/api/v1/tasks',
   tags: ['Tasks'],
   summary: 'Create a task',
-  request: {
-    body: {
-      content: { 'application/json': { schema: createTaskSchema } },
-    },
-  },
-  responses: {
-    201: {
-      description: 'Task created',
-      content: {
-        'application/json': { schema: successResponseSchema(taskSchema) },
-      },
-    },
-    400: errorResponses[400],
-    500: errorResponses[500],
-  },
+  requestSchema: createTaskSchema,
+  responseSchema: taskSchema,
+  responseStatus: 201,
+  responseDescription: 'Task created',
+  errorStatuses: [400, 500],
 });
 
-registry.registerPath({
+route({
   method: 'get',
   path: '/api/v1/tasks/{id}',
   tags: ['Tasks'],
   summary: 'Get a task',
-  request: { params: taskIdParamsSchema },
-  responses: {
-    200: {
-      description: 'Task details',
-      content: {
-        'application/json': { schema: successResponseSchema(taskSchema) },
-      },
-    },
-    400: errorResponses[400],
-    404: errorResponses[404],
-    500: errorResponses[500],
-  },
+  params: taskIdParamsSchema,
+  responseSchema: taskSchema,
+  responseDescription: 'Task details',
+  errorStatuses: [400, 404, 500],
 });
 
-registry.registerPath({
+route({
   method: 'patch',
   path: '/api/v1/tasks/{id}',
   tags: ['Tasks'],
   summary: 'Update a task',
-  request: {
-    params: taskIdParamsSchema,
-    body: {
-      content: { 'application/json': { schema: updateTaskSchema } },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Task updated',
-      content: {
-        'application/json': { schema: successResponseSchema(taskSchema) },
-      },
-    },
-    400: errorResponses[400],
-    404: errorResponses[404],
-    500: errorResponses[500],
-  },
+  params: taskIdParamsSchema,
+  requestSchema: updateTaskSchema,
+  responseSchema: taskSchema,
+  responseDescription: 'Task updated',
+  errorStatuses: [400, 404, 500],
 });
 
-registry.registerPath({
+route({
   method: 'delete',
   path: '/api/v1/tasks/{id}',
   tags: ['Tasks'],
   summary: 'Delete a task',
-  request: { params: taskIdParamsSchema },
-  responses: {
-    204: { description: 'Task deleted' },
-    400: errorResponses[400],
-    404: errorResponses[404],
-    500: errorResponses[500],
-  },
+  params: taskIdParamsSchema,
+  responseStatus: 204,
+  responseDescription: 'Task deleted',
+  errorStatuses: [400, 404, 500],
 });
 
 router.get('/', async (_req, res) => {
