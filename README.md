@@ -8,23 +8,114 @@
 - Docker 與 Docker Compose
 - [sqlc](https://docs.sqlc.dev/en/latest/overview/install.html)
 
-## 快速開始
+## 完整啟動流程
+
+以下流程使用 Docker Compose 啟動 PostgreSQL，並在本機啟動 Node.js API。
+
+### 1. 進入專案目錄
+
+```bash
+cd backend-template
+```
+
+### 2. 啟動 Docker
+
+macOS 使用 Docker Desktop 時，可執行：
+
+```bash
+open -a Docker
+```
+
+等待 Docker Desktop 完全啟動，再確認 Docker daemon 可以連線：
+
+```bash
+docker info
+```
+
+如果出現 `Cannot connect to the Docker daemon`，代表 Docker Desktop 尚未完成啟動，請稍候再試。
+
+### 3. 第一次執行時安裝與設定
+
+安裝 Node.js 套件：
 
 ```bash
 npm install
+```
+
+第一次執行時建立環境變數檔案：
+
+```bash
 cp .env.sample .env
-# 編輯 .env：填入 Google OAuth Client ID 與至少 32 字元的 JWT_SECRET
+```
+
+接著編輯 `.env`，至少確認以下設定：
+
+- `DATABASE_URL` 維持指向 `localhost:5432/backend_template`。
+- `GOOGLE_CLIENT_ID` 填入 Google OAuth Client ID。
+- `JWT_SECRET` 填入至少 32 個字元的密鑰。
+
+如果 `.env` 已經存在，請勿再次執行 `cp .env.sample .env`，以免覆蓋原有設定。
+
+### 4. 啟動並初始化資料庫
+
+```bash
 npm run db:up
+docker-compose ps
 npm run db:migrate
 npm run db:generate
+```
+
+`docker-compose ps` 應顯示 `postgres` 正在運行。`db:generate` 需要電腦已安裝 `sqlc`；平常只有修改 SQL query 後才需要重新執行。
+
+### 5. 啟動後端
+
+```bash
 npm run dev
 ```
+
+`npm run dev` 只會啟動 Node.js API，不會自行啟動 PostgreSQL，因此必須先完成前面的 `npm run db:up`。
 
 啟動後可使用：
 
 - API：`http://localhost:3000`
 - 健康檢查：`http://localhost:3000/health`
 - Swagger UI：`http://localhost:3000/api-docs`
+
+## 日常啟動
+
+完成第一次設定後，每次開發通常依序執行：
+
+```bash
+cd backend-template
+open -a Docker
+docker info
+npm run db:up
+npm run db:migrate
+npm run dev
+```
+
+執行 `docker info` 前，需等待 Docker Desktop 完全啟動。
+
+## 關閉專案
+
+測試完成後，請依以下順序關閉：
+
+1. 在執行 `npm run dev` 的終端機按下 `Ctrl + C`，停止 Node.js API。
+2. 停止並移除 Compose 建立的 PostgreSQL 容器與網路：
+
+```bash
+npm run db:down
+```
+
+3. 不再使用其他 Docker 容器時，可從 Docker Desktop 選單選擇 **Quit Docker Desktop**。
+
+`npm run db:down` 不會刪除 PostgreSQL 資料；下次執行 `npm run db:up` 時仍可繼續使用。若確定要連資料一起刪除，才執行：
+
+```bash
+docker-compose down -v
+```
+
+這會刪除 `postgres_data` volume 及其中的資料，無法透過下一次啟動自動還原。
 
 ## 常用指令
 
