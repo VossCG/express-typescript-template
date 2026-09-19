@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import { sendSuccess } from '../../core/ApiResponse';
-import { route } from '../../helpers/routeDecorator';
-import { healthSchema } from './schema';
+import { sendSuccess } from '../core/ApiResponse';
+import { route } from '../helpers/routeDecorator';
+import { healthSchema } from '../schemas/health';
 
 const router = Router();
 

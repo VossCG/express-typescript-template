@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
+    "test:build": "tsc -p tsconfig.test.json",
+    "test": "npm run test:build && node --test build/test/test/*.test.js",
     "start": "node dist/server.js",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",

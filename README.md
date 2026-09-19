@@ -31,6 +31,7 @@ npm run dev
 | --- | --- |
 | `npm run dev` | 監聽檔案並啟動開發伺服器 |
 | `npm run build` | 編譯 TypeScript 至 `dist/` |
+| `npm test` | 編譯並執行 service 與 repository 測試 |
 | `npm start` | 執行編譯後的伺服器 |
 | `npm run db:up` | 啟動本機 PostgreSQL |
 | `npm run db:down` | 停止本機 PostgreSQL |
@@ -86,16 +87,32 @@ curl -X POST http://localhost:3000/api/v1/tasks \
 src/
   config/       環境變數與 OpenAPI 設定
   core/         共用錯誤與回應格式
-  database/     PostgreSQL 連線與 sqlc 產生碼
+  database/     PostgreSQL 連線與 sqlc 產生的查詢／型別
   helpers/      共用 request 驗證
+  mappers/      sqlc query result 與 API response 的轉換
   middleware/   Express middleware
-  routes/       API resources
+  repositories/ 封裝資料庫存取
+  routes/       HTTP routes 與全域 router 組裝
+  schemas/      Zod request、response schema
+  services/     商業規則與應用流程
 db/
   migrations/   dbmate migrations
   queries/      sqlc SQL queries
+test/            Node.js 內建測試
 ```
 
-新增 resource 時，依序加入 migration、query、Zod schema 與 route；修改 SQL 後執行 `npm run db:generate`。
+專案依技術職責分層，請求採用以下資料流：
+
+```text
+route → service → repository → sqlc → PostgreSQL
+```
+
+- `route`：定義 HTTP route、request validation 與 response mapping。
+- `service`：實作商業規則，不直接依賴 Express 或 PostgreSQL。
+- `repository`：封裝 sqlc 產生的查詢函式。
+- `routes/index.ts`：建立 repository、service 與 router，集中組裝依賴。
+
+新增 resource 時，分別在對應的 `schemas`、`repositories`、`services`、`routes` 層加入檔案，並新增 migration 與 query。資料庫輸入／輸出型別直接使用 sqlc 產生的 `Args` 與 `Row`；修改 SQL 後執行 `npm run db:generate`，不要直接修改 `src/database/sqlc` 下的產生碼。
 
 ## 環境變數
 
