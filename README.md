@@ -194,11 +194,14 @@ curl -X POST http://localhost:3000/api/v1/tasks \
 ```text
 src/
   config/       環境變數與 OpenAPI 設定
+  contracts/    Endpoint schema 與 OpenAPI metadata
+  controllers/  將 HTTP request 轉成 service 呼叫與 response
   core/         共用錯誤與回應格式
   database/     PostgreSQL 連線與 sqlc 產生的查詢／型別
   helpers/      共用 request 驗證
   mappers/      sqlc query result 與 API response 的轉換
   middleware/   Express middleware
+  modules/      組裝各功能的 repository、service 與 controller
   repositories/ 封裝資料庫存取
   routes/       HTTP routes 與全域 router 組裝
   schemas/      Zod request、response schema
@@ -213,15 +216,44 @@ test/            Node.js 內建測試
 專案依技術職責分層，請求採用以下資料流：
 
 ```text
-route → service → repository → sqlc → PostgreSQL
+route → controller → service → repository → sqlc → PostgreSQL
 ```
 
-- `route`：定義 HTTP route、request validation 與 response mapping。
+- `route`：將 endpoint contract 對應到 controller。
+- `contract`：集中描述 endpoint schema、回應狀態與 OpenAPI metadata。
+- `controller`：呼叫 service，並將結果轉換成 HTTP response。
 - `service`：實作商業規則，不直接依賴 Express 或 PostgreSQL。
 - `repository`：封裝 sqlc 產生的查詢函式。
-- `routes/index.ts`：建立 repository、service 與 router，集中組裝依賴。
+- `modules`：建立各功能所需的 repository、service 與 controller。
+- `routes/index.ts`：只定義完整路徑並掛載各功能的 router。
 
-新增 resource 時，分別在對應的 `schemas`、`repositories`、`services`、`routes` 層加入檔案，並新增 migration 與 query。資料庫輸入／輸出型別直接使用 sqlc 產生的 `Args` 與 `Row`；修改 SQL 後執行 `npm run db:generate`，不要直接修改 `src/database/sqlc` 下的產生碼。
+新增 resource 時，分別在對應的 `schemas`、`contracts`、`repositories`、`services`、`controllers`、`routes` 與 `modules` 層加入檔案，並新增 migration 與 query。資料庫輸入／輸出型別直接使用 sqlc 產生的 `Args` 與 `Row`；修改 SQL 後執行 `npm run db:generate`，不要直接修改 `src/database/sqlc` 下的產生碼。
+
+### Route 與 OpenAPI
+
+OpenAPI metadata 使用 `defineOperation` 定義；HTTP method、path、middleware 與 controller 則直接平鋪在 route 檔案中：
+
+```ts
+const createWidgetDocs = defineOperation({
+  summary: 'Create a widget',
+  body: createWidgetSchema,
+  response: widgetSchema,
+  status: 201,
+  errors: [400, 500],
+});
+
+const router = createOpenApiRouter({
+  tags: ['Widgets'],
+});
+
+router.post('/', createWidgetDocs, authenticate, controller.create);
+```
+
+`body`、`params` 與 `query` 會自動掛上對應的 validator；Express path 中的 `:id` 會在文件中自動轉換為 OpenAPI 的 `{id}`。完整的 base path 只在 `routes/index.ts` 掛載時定義一次，並同時套用到 Express 與 OpenAPI：
+
+```ts
+mountOpenApiRouter(router, '/api/v1/widgets', widgetRoutes);
+```
 
 ## 環境變數
 
