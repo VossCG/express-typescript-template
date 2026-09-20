@@ -13,9 +13,7 @@ export interface TaskController {
   delete: RequestHandler;
 }
 
-export const createTaskController = (
-  service: TaskService,
-): TaskController => ({
+export const createTaskController = (service: TaskService): TaskController => ({
   list: async (_req, res) => {
     const tasks = await service.list();
     sendSuccess(res, tasks.map(toTaskResponse));
@@ -32,10 +30,7 @@ export const createTaskController = (
   },
 
   update: async (req, res) => {
-    const task = await service.update(
-      req.params.id,
-      req.body as UpdateTaskInput,
-    );
+    const task = await service.update(req.params.id, req.body as UpdateTaskInput);
     sendSuccess(res, toTaskResponse(task));
   },
 

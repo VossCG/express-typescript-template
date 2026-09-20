@@ -71,12 +71,7 @@ describe('TaskRepository', () => {
       description: null,
       completed: true,
     });
-    assert.deepEqual(updateFake.calls[0].parameters, [
-      row[0],
-      row[1],
-      null,
-      true,
-    ]);
+    assert.deepEqual(updateFake.calls[0].parameters, [row[0], row[1], null, true]);
 
     const deleteFake = createFakeSql([]);
     await createTaskRepository(deleteFake.sql).delete(row[0] as string);

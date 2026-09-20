@@ -2,11 +2,8 @@ import http from 'node:http';
 
 import app from './app';
 import { env } from './config/env';
-import {
-  checkDatabaseConnection,
-  closeDatabaseConnection,
-} from './database';
 import logger from './core/logger';
+import { checkDatabaseConnection, closeDatabaseConnection } from './database';
 
 const start = async (): Promise<void> => {
   await checkDatabaseConnection();
@@ -30,9 +27,20 @@ const start = async (): Promise<void> => {
     shuttingDown = true;
     logger.info({ signal }, 'Shutting down');
 
-    server.close(async () => {
+    const forceExit = setTimeout(() => {
+      logger.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 10_000);
+    forceExit.unref();
+
+    server.close(async (error) => {
+      if (error) {
+        logger.error({ err: error }, 'Failed to close API server');
+        process.exitCode = 1;
+      }
       await closeDatabaseConnection();
-      process.exit(0);
+      clearTimeout(forceExit);
+      process.exit(process.exitCode ?? 0);
     });
   };
 

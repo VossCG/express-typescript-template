@@ -3,19 +3,40 @@
   "version": "1.0.0",
   "private": true,
   "description": "A reusable Express, TypeScript, and PostgreSQL backend template.",
+  "author": "VossCG",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VossCG/express-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/VossCG/express-typescript/issues"
+  },
+  "homepage": "https://github.com/VossCG/express-typescript#readme",
+  "keywords": [
+    "express",
+    "postgresql",
+    "sqlc",
+    "swagger",
+    "typescript",
+    "zod",
+    "template"
+  ],
   "main": "dist/server.js",
+  "packageManager": "npm@10",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "predev": "node scripts/check-dev-services.mjs",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
-    "test:build": "tsc -p tsconfig.test.json",
+    "clean": "node scripts/clean.mjs",
+    "build": "npm run clean && tsc",
+    "test:build": "npm run clean && tsc -p tsconfig.test.json",
     "test": "npm run test:build && node --test build/test/test/*.test.js",
     "start": "node dist/server.js",
-    "db:up": "docker-compose up -d",
-    "db:down": "docker-compose down",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
     "db:migrate": "dbmate up",
     "db:rollback": "dbmate down",
     "db:status": "dbmate status",
@@ -35,9 +56,11 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
+    "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
     "dbmate": "^2.27.0",
     "pino-pretty": "^13.1.1",
+    "supertest": "^7.1.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   }

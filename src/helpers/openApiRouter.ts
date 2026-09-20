@@ -1,8 +1,5 @@
-import type {
-  RouteConfig,
-  ZodContentObject,
-} from '@asteasolutions/zod-to-openapi';
-import { Router, type RequestHandler } from 'express';
+import type { RouteConfig, ZodContentObject } from '@asteasolutions/zod-to-openapi';
+import { type RequestHandler, Router } from 'express';
 import type { z } from 'zod';
 
 import {
@@ -46,11 +43,7 @@ export type OpenApiOperationOptions = Omit<
 
 type OpenApiRouteInput = OpenApiRouteOptions | OpenApiOperationOptions;
 
-type RegisterRoute = (
-  path: string,
-  options: OpenApiRouteInput,
-  ...handlers: RouteHandlers
-) => void;
+type RegisterRoute = (path: string, options: OpenApiRouteInput, ...handlers: RouteHandlers) => void;
 
 interface OpenApiRouteDefinition {
   method: SupportedMethod;
@@ -79,18 +72,12 @@ export interface CreateOpenApiRouterOptions {
   tags?: string[];
 }
 
-export const defineOperation = (
-  options: OpenApiOperationOptions,
-): OpenApiOperationOptions => options;
+export const defineOperation = (options: OpenApiOperationOptions): OpenApiOperationOptions =>
+  options;
 
 const toRouteOptions = (input: OpenApiRouteInput): OpenApiRouteOptions => {
-  const {
-    body,
-    response,
-    status,
-    errors,
-    ...rest
-  } = input as OpenApiOperationOptions & OpenApiRouteOptions;
+  const { body, response, status, errors, ...rest } = input as OpenApiOperationOptions &
+    OpenApiRouteOptions;
 
   return {
     ...rest,
@@ -102,15 +89,12 @@ const toRouteOptions = (input: OpenApiRouteInput): OpenApiRouteOptions => {
 };
 
 const joinPaths = (basePath: string, routePath: string): string => {
-  const segments = [basePath, routePath]
-    .flatMap((path) => path.split('/'))
-    .filter(Boolean);
+  const segments = [basePath, routePath].flatMap((path) => path.split('/')).filter(Boolean);
 
   return `/${segments.join('/')}`;
 };
 
-const toOpenApiPath = (path: string): string =>
-  path.replace(/:([A-Za-z0-9_]+)/g, '{$1}');
+const toOpenApiPath = (path: string): string => path.replace(/:([A-Za-z0-9_]+)/g, '{$1}');
 
 const registerOpenApiPath = (
   method: SupportedMethod,
@@ -118,11 +102,7 @@ const registerOpenApiPath = (
   options: OpenApiRouteOptions,
   defaultTags?: string[],
 ): void => {
-  const {
-    contentType = 'application/json',
-    errorStatuses = [],
-    responseStatus = 200,
-  } = options;
+  const { contentType = 'application/json', errorStatuses = [], responseStatus = 200 } = options;
 
   const request: RouteConfig['request'] = {
     ...(options.params ? { params: options.params } : {}),
@@ -175,9 +155,7 @@ const registerOpenApiPath = (
  * Creates an Express router whose route declarations also install validation
  * and collect the OpenAPI metadata registered when the router is mounted.
  */
-export const createOpenApiRouter = ({
-  tags,
-}: CreateOpenApiRouterOptions): OpenApiRouter => {
+export const createOpenApiRouter = ({ tags }: CreateOpenApiRouterOptions): OpenApiRouter => {
   const expressRouter = Router();
   const definitions: OpenApiRouteDefinition[] = [];
 

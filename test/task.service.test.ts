@@ -15,9 +15,7 @@ const task: GetTaskRow = {
   updatedAt: new Date('2026-09-19T09:00:00.000Z'),
 };
 
-const createFakeRepository = (
-  overrides: Partial<TaskRepository> = {},
-): TaskRepository => ({
+const createFakeRepository = (overrides: Partial<TaskRepository> = {}): TaskRepository => ({
   findAll: async () => [task],
   findById: async () => task,
   create: async (input) => ({ ...task, ...input }),
@@ -77,29 +75,17 @@ describe('TaskService', () => {
   });
 
   it('throws NotFoundError when reading a missing task', async () => {
-    const service = createTaskService(
-      createFakeRepository({ findById: async () => null }),
-    );
+    const service = createTaskService(createFakeRepository({ findById: async () => null }));
 
     await assert.rejects(service.getById(task.id), NotFoundError);
   });
 
   it('throws NotFoundError when updating a missing or concurrently deleted task', async () => {
-    const missingService = createTaskService(
-      createFakeRepository({ findById: async () => null }),
-    );
-    const deletedService = createTaskService(
-      createFakeRepository({ update: async () => null }),
-    );
+    const missingService = createTaskService(createFakeRepository({ findById: async () => null }));
+    const deletedService = createTaskService(createFakeRepository({ update: async () => null }));
 
-    await assert.rejects(
-      missingService.update(task.id, { title: 'New title' }),
-      NotFoundError,
-    );
-    await assert.rejects(
-      deletedService.update(task.id, { title: 'New title' }),
-      NotFoundError,
-    );
+    await assert.rejects(missingService.update(task.id, { title: 'New title' }), NotFoundError);
+    await assert.rejects(deletedService.update(task.id, { title: 'New title' }), NotFoundError);
   });
 
   it('checks existence before deleting and rejects a missing task', async () => {
@@ -115,9 +101,7 @@ describe('TaskService', () => {
     await service.delete(task.id);
     assert.equal(deletedId, task.id);
 
-    const missingService = createTaskService(
-      createFakeRepository({ findById: async () => null }),
-    );
+    const missingService = createTaskService(createFakeRepository({ findById: async () => null }));
     await assert.rejects(missingService.delete(task.id), NotFoundError);
   });
 });

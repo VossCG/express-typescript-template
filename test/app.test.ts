@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import request from 'supertest';
+
+import app from '../src/app';
+
+describe('HTTP application', () => {
+  it('serves the health endpoint with the standard success envelope', async () => {
+    const response = await request(app).get('/health');
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.success, true);
+    assert.equal(response.body.data.status, 'ok');
+  });
+
+  it('returns a standard not-found response for unknown routes', async () => {
+    const response = await request(app).get('/does-not-exist');
+
+    assert.equal(response.status, 404);
+    assert.equal(response.body.success, false);
+    assert.equal(response.body.error.code, 'NOT_FOUND');
+  });
+
+  it('serves the OpenAPI documentation', async () => {
+    const response = await request(app).get('/api-docs/');
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers['content-type'], /text\/html/);
+  });
+
+  it('rejects invalid task input before reaching the database', async () => {
+    const response = await request(app).post('/api/v1/tasks').send({ title: '' });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.success, false);
+    assert.equal(response.body.error.code, 'BAD_REQUEST');
+  });
+});

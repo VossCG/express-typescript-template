@@ -1,12 +1,4 @@
 import type { Sql } from 'postgres';
-
-import {
-  createTask,
-  deleteTask,
-  getTask,
-  listTasks,
-  updateTask,
-} from '../database/sqlc/tasks_sql';
 import type {
   CreateTaskArgs,
   CreateTaskRow,
@@ -15,6 +7,7 @@ import type {
   UpdateTaskArgs,
   UpdateTaskRow,
 } from '../database/sqlc/tasks_sql';
+import { createTask, deleteTask, getTask, listTasks, updateTask } from '../database/sqlc/tasks_sql';
 
 export interface TaskRepository {
   findAll(): Promise<ListTasksRow[]>;

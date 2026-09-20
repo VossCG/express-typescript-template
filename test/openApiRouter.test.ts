@@ -36,20 +36,14 @@ describe('OpenApiRouter', () => {
       errors: [400],
     });
 
-    router.patch(
-      '/:id',
-      operation,
-      (req, res) => {
-        res.json({ success: true, data: req.body });
-      },
-    );
+    router.patch('/:id', operation, (req, res) => {
+      res.json({ success: true, data: req.body });
+    });
 
     const parentRouter = Router();
     mountOpenApiRouter(parentRouter, '/__test/widgets', router);
 
-    const document = new OpenApiGeneratorV3(
-      registry.definitions,
-    ).generateDocument({
+    const document = new OpenApiGeneratorV3(registry.definitions).generateDocument({
       openapi: '3.0.0',
       info: { title: 'Test', version: '1.0.0' },
     });
@@ -61,9 +55,7 @@ describe('OpenApiRouter', () => {
     assert.ok(documentedOperation?.responses['200']);
     assert.ok(documentedOperation?.responses['400']);
 
-    const [layer] = (
-      router.expressRouter as Router & { stack: ExpressRouteLayer[] }
-    ).stack;
+    const [layer] = (router.expressRouter as Router & { stack: ExpressRouteLayer[] }).stack;
 
     assert.equal(layer.route?.path, '/:id');
     assert.equal(layer.route?.methods.patch, true);

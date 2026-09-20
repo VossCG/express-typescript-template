@@ -15,9 +15,7 @@ const task = {
   updatedAt: new Date('2026-09-20T09:00:00.000Z'),
 };
 
-const createFakeService = (
-  overrides: Partial<TaskService> = {},
-): TaskService => ({
+const createFakeService = (overrides: Partial<TaskService> = {}): TaskService => ({
   list: async () => [task],
   getById: async () => task,
   create: async () => task,
@@ -106,11 +104,7 @@ describe('TaskController', () => {
     );
     const { response, result } = createResponseRecorder();
 
-    await controller.delete(
-      { params: { id: task.id } } as unknown as Request,
-      response,
-      next,
-    );
+    await controller.delete({ params: { id: task.id } } as unknown as Request, response, next);
 
     assert.equal(deletedId, task.id);
     assert.equal(result.status, 204);

@@ -1,4 +1,4 @@
-import { ErrorRequestHandler, RequestHandler } from 'express';
+import type { ErrorRequestHandler, RequestHandler } from 'express';
 
 import { env } from '../config/env';
 import { ApiError, NotFoundError } from '../core/ApiError';

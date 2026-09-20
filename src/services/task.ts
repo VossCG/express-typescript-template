@@ -16,9 +16,7 @@ export interface TaskService {
   delete(id: string): Promise<void>;
 }
 
-export const createTaskService = (
-  repository: TaskRepository,
-): TaskService => ({
+export const createTaskService = (repository: TaskRepository): TaskService => ({
   list: () => repository.findAll(),
 
   getById: async (id) => {
@@ -40,10 +38,7 @@ export const createTaskService = (
     const task = await repository.update({
       id: current.id,
       title: input.title ?? current.title,
-      description:
-        input.description === undefined
-          ? current.description
-          : input.description,
+      description: input.description === undefined ? current.description : input.description,
       completed: input.completed ?? current.completed,
     });
 

@@ -1,5 +1,5 @@
-import { RequestHandler } from 'express';
-import { z } from 'zod';
+import type { RequestHandler } from 'express';
+import type { z } from 'zod';
 
 import { BadRequestError } from '../core/ApiError';
 
@@ -13,9 +13,7 @@ export const validate = (
     const result = schema.safeParse(req[source]);
 
     if (!result.success) {
-      return next(
-        new BadRequestError('Request validation failed', result.error.flatten()),
-      );
+      return next(new BadRequestError('Request validation failed', result.error.flatten()));
     }
 
     if (source !== 'query') {

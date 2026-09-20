@@ -1,9 +1,5 @@
-import { Response } from 'express';
+import type { Response } from 'express';
 
-export const sendSuccess = <T>(
-  res: Response,
-  data: T,
-  status = 200,
-): void => {
+export const sendSuccess = <T>(res: Response, data: T, status = 200): void => {
   res.status(status).json({ success: true, data });
 };
