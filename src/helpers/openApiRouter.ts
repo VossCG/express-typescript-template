@@ -28,7 +28,6 @@ export interface OpenApiRouteOptions {
   responseSchema?: z.ZodTypeAny;
   params?: RouteRequest['params'];
   query?: RouteRequest['query'];
-  security?: RouteConfig['security'];
   contentType?: ContentType;
   responseStatus?: number;
   responseDescription?: string;
@@ -167,7 +166,6 @@ const registerOpenApiPath = (
     description: options.description,
     tags: options.tags ?? defaultTags,
     operationId: options.operationId,
-    security: options.security,
     ...(Object.keys(request).length > 0 ? { request } : {}),
     responses,
   });
