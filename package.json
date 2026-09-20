@@ -8,6 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "node scripts/check-dev-services.mjs",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "test:build": "tsc -p tsconfig.test.json",

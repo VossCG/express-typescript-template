@@ -75,6 +75,8 @@ npm run dev
 
 `npm run dev` 只會啟動 Node.js API，不會自行啟動 PostgreSQL，因此必須先完成前面的 `npm run db:up`。
 
+執行 `npm run dev` 時會先自動檢查 Docker daemon 與 PostgreSQL 容器。如果服務尚未啟動，終端機會顯示對應的原因與處理指令，並暫停啟動 API。
+
 啟動後可使用：
 
 - API：`http://localhost:3000`
