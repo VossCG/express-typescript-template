@@ -1,46 +1,40 @@
 import { z } from 'zod';
-
 import { defineOperation } from '../helpers/openApiRouter';
-import {
-  createTaskSchema,
-  taskIdParamsSchema,
-  taskSchema,
-  updateTaskSchema,
-} from '../schemas/task';
+import * as taskSchemas from '../schemas/task';
 
 export const taskDocs = {
   list: defineOperation({
     summary: 'List tasks',
-    response: z.array(taskSchema),
+    response: z.array(taskSchemas.taskSchema),
     errors: [500],
   }),
 
   create: defineOperation({
     summary: 'Create a task',
-    body: createTaskSchema,
-    response: taskSchema,
+    body: taskSchemas.createTaskSchema,
+    response: taskSchemas.taskSchema,
     status: 201,
     errors: [400, 500],
   }),
 
   getById: defineOperation({
     summary: 'Get a task',
-    params: taskIdParamsSchema,
-    response: taskSchema,
+    params: taskSchemas.taskIdParamsSchema,
+    response: taskSchemas.taskSchema,
     errors: [400, 404, 500],
   }),
 
   update: defineOperation({
     summary: 'Update a task',
-    params: taskIdParamsSchema,
-    body: updateTaskSchema,
-    response: taskSchema,
+    params: taskSchemas.taskIdParamsSchema,
+    body: taskSchemas.updateTaskSchema,
+    response: taskSchemas.taskSchema,
     errors: [400, 404, 500],
   }),
 
   delete: defineOperation({
     summary: 'Delete a task',
-    params: taskIdParamsSchema,
+    params: taskSchemas.taskIdParamsSchema,
     status: 204,
     errors: [400, 404, 500],
   }),

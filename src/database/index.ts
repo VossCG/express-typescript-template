@@ -8,10 +8,10 @@ export const sql = postgres(env.DATABASE_URL, {
   connect_timeout: 5,
 });
 
-export const checkDatabaseConnection = async (): Promise<void> => {
+export async function check(): Promise<void> {
   await sql`SELECT 1`;
-};
+}
 
-export const closeDatabaseConnection = async (): Promise<void> => {
+export async function close(): Promise<void> {
   await sql.end({ timeout: 5 });
-};
+}

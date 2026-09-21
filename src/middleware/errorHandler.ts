@@ -4,11 +4,11 @@ import { env } from '../config/env';
 import { ApiError, NotFoundError } from '../core/ApiError';
 import logger from '../core/logger';
 
-export const notFoundHandler: RequestHandler = (req, _res, next) => {
+export const notFound: RequestHandler = (req, _res, next) => {
   next(new NotFoundError(`Route ${req.method} ${req.originalUrl} not found`));
 };
 
-export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+export const error: ErrorRequestHandler = (err, req, res, _next) => {
   if (err instanceof SyntaxError && 'status' in err && err.status === 400) {
     res.status(400).json({
       success: false,

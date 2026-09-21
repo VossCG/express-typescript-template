@@ -1,12 +1,11 @@
-import http from 'node:http';
-
 import app from './app';
+import http from 'node:http';
 import { env } from './config/env';
 import logger from './core/logger';
-import { checkDatabaseConnection, closeDatabaseConnection } from './database';
+import * as db from './database';
 
 const start = async (): Promise<void> => {
-  await checkDatabaseConnection();
+  await db.check();
   logger.info('Database connection established');
 
   const server = http.createServer(app);
@@ -38,7 +37,7 @@ const start = async (): Promise<void> => {
         logger.error({ err: error }, 'Failed to close API server');
         process.exitCode = 1;
       }
-      await closeDatabaseConnection();
+      await db.close();
       clearTimeout(forceExit);
       process.exit(process.exitCode ?? 0);
     });

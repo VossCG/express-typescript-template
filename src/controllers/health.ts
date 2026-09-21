@@ -1,5 +1,4 @@
 import type { RequestHandler } from 'express';
-
 import { sendSuccess } from '../core/ApiResponse';
 
 export interface HealthController {

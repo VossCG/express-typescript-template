@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { NotFoundError } from '../src/core/ApiError';
-import type { GetTaskRow } from '../src/database/sqlc/tasks_sql';
+import type * as TaskSql from '../src/database/sqlc/tasks_sql';
 import type { TaskRepository } from '../src/repositories/task';
 import { createTaskService } from '../src/services/task';
 
-const task: GetTaskRow = {
+const task: TaskSql.GetTaskRow = {
   id: '1f547b90-9752-46d2-99f0-b1501518ce4b',
   title: 'Write tests',
   description: 'Cover the service layer',

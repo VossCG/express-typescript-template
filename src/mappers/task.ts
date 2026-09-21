@@ -1,11 +1,10 @@
-import type {
-  CreateTaskRow,
-  GetTaskRow,
-  ListTasksRow,
-  UpdateTaskRow,
-} from '../database/sqlc/tasks_sql';
+import type * as TaskSql from '../database/sqlc/tasks_sql';
 
-type TaskRow = ListTasksRow | GetTaskRow | CreateTaskRow | UpdateTaskRow;
+type TaskRow =
+  | TaskSql.ListTasksRow
+  | TaskSql.GetTaskRow
+  | TaskSql.CreateTaskRow
+  | TaskSql.UpdateTaskRow;
 
 export const toTaskResponse = (task: TaskRow) => ({
   ...task,

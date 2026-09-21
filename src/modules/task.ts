@@ -1,9 +1,9 @@
 import { createTaskController } from '../controllers/task';
-import { sql } from '../database';
+import * as db from '../database';
 import { createTaskRepository } from '../repositories/task';
 import { createTaskService } from '../services/task';
 
-const taskRepository = createTaskRepository(sql);
+const taskRepository = createTaskRepository(db.sql);
 const taskService = createTaskService(taskRepository);
 const taskController = createTaskController(taskService);
 

@@ -1,20 +1,14 @@
 import type { RouteConfig, ZodContentObject } from '@asteasolutions/zod-to-openapi';
 import { type RequestHandler, Router } from 'express';
+import * as openApiConfig from '../config/openapi';
+import { validate } from './validator';
 import type { z } from 'zod';
 
-import {
-  baseSuccessResponseSchema,
-  errorResponses,
-  registry,
-  successResponseSchema,
-} from '../config/openapi';
-import { validate } from './validator';
-
 type RouteRequest = NonNullable<RouteConfig['request']>;
-type ErrorStatus = keyof typeof errorResponses;
-type ContentType = Extract<keyof ZodContentObject, string>;
-type SupportedMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 type RouteHandlers = [RequestHandler, ...RequestHandler[]];
+type ContentType = Extract<keyof ZodContentObject, string>;
+type ErrorStatus = keyof typeof openApiConfig.errorResponses;
+type SupportedMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 export interface OpenApiRouteOptions {
   summary?: string;
@@ -127,8 +121,8 @@ const registerOpenApiPath = (
             content: {
               'application/json': {
                 schema: options.responseSchema
-                  ? successResponseSchema(options.responseSchema)
-                  : baseSuccessResponseSchema,
+                  ? openApiConfig.successResponseSchema(options.responseSchema)
+                  : openApiConfig.baseSuccessResponseSchema,
               },
             },
           }),
@@ -136,10 +130,10 @@ const registerOpenApiPath = (
   };
 
   for (const status of errorStatuses) {
-    responses[status] = errorResponses[status];
+    responses[status] = openApiConfig.errorResponses[status];
   }
 
-  registry.registerPath({
+  openApiConfig.registry.registerPath({
     method,
     path,
     summary: options.summary,

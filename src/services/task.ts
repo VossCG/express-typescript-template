@@ -1,18 +1,13 @@
 import { NotFoundError } from '../core/ApiError';
-import type {
-  CreateTaskRow,
-  GetTaskRow,
-  ListTasksRow,
-  UpdateTaskRow,
-} from '../database/sqlc/tasks_sql';
 import type { TaskRepository } from '../repositories/task';
-import type { CreateTaskInput, UpdateTaskInput } from '../schemas/task';
+import type * as TaskSql from '../database/sqlc/tasks_sql';
+import type * as TaskSchemas from '../schemas/task';
 
 export interface TaskService {
-  list(): Promise<ListTasksRow[]>;
-  getById(id: string): Promise<GetTaskRow>;
-  create(input: CreateTaskInput): Promise<CreateTaskRow>;
-  update(id: string, input: UpdateTaskInput): Promise<UpdateTaskRow>;
+  list(): Promise<TaskSql.ListTasksRow[]>;
+  getById(id: string): Promise<TaskSql.GetTaskRow>;
+  create(input: TaskSchemas.CreateTaskInput): Promise<TaskSql.CreateTaskRow>;
+  update(id: string, input: TaskSchemas.UpdateTaskInput): Promise<TaskSql.UpdateTaskRow>;
   delete(id: string): Promise<void>;
 }
 

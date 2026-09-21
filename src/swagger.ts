@@ -1,7 +1,6 @@
-import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
-
 import { env } from './config/env';
 import { registry } from './config/openapi';
+import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import './routes';
 
 export const generateOpenApiDocument = () => {

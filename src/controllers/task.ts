@@ -1,9 +1,8 @@
-import type { RequestHandler } from 'express';
-
 import { sendSuccess } from '../core/ApiResponse';
 import { toTaskResponse } from '../mappers/task';
-import type { CreateTaskInput, UpdateTaskInput } from '../schemas/task';
 import type { TaskService } from '../services/task';
+import type { RequestHandler } from 'express';
+import type { CreateTaskInput, UpdateTaskInput } from '../schemas/task';
 
 export interface TaskController {
   list: RequestHandler;

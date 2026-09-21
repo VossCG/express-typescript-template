@@ -1,8 +1,8 @@
-import { healthDocs } from '../contracts/health';
 import { healthController } from '../controllers/health';
-import { createOpenApiRouter } from '../helpers/openApiRouter';
+import { healthDocs } from '../contracts/health';
+import * as openApi from '../helpers/openApiRouter';
 
-const router = createOpenApiRouter({ tags: ['Health'] });
+const router = openApi.createOpenApiRouter({ tags: ['Health'] });
 
 router.get('/', healthDocs.check, healthController.check);
 
