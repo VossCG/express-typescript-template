@@ -34,6 +34,7 @@
     "build": "npm run clean && tsc",
     "test:build": "npm run clean && tsc -p tsconfig.test.json",
     "test": "npm run test:build && node --test build/test/test/*.test.js",
+    "test:integration": "npm run test:build && node scripts/run-integration-tests.mjs",
     "start": "node dist/server.js",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",

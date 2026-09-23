@@ -53,6 +53,7 @@ The `compose.yaml` file is intended for local PostgreSQL development. Use a mana
 | `npm run dev` | Watch files and start the development server |
 | `npm run build` | Compile TypeScript into `dist/` |
 | `npm test` | Compile and run HTTP, service, and repository tests |
+| `npm run test:integration` | Run migration and Tasks CRUD against a disposable PostgreSQL database |
 | `npm run clean` | Remove `dist/` and `build/` output |
 | `npm start` | Run the compiled server |
 | `npm run db:up` | Start the local PostgreSQL container |
@@ -61,6 +62,14 @@ The `compose.yaml` file is intended for local PostgreSQL development. Use a mana
 | `npm run db:rollback` | Roll back the latest migration |
 | `npm run db:status` | Show migration status |
 | `npm run db:generate` | Generate TypeScript query code from SQL |
+
+To run the PostgreSQL integration test, start the local database and provide a connection URL for an account that can create and drop databases:
+
+```bash
+TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable' npm run test:integration
+```
+
+The command creates a uniquely named test database, applies migrations, runs the Tasks CRUD test, and drops that test database afterward. It does not use the application's `DATABASE_URL` as the test target.
 
 ## Example API
 
