@@ -91,10 +91,12 @@ src/
   controllers/  HTTP request and response handling
   core/         Shared errors and response formats
   database/     PostgreSQL connection and generated sqlc code
+  domain/       Task model and use-case input types
   helpers/      Shared request validation
-  mappers/      Map sqlc results to API responses
+  mappers/      Map domain models to API responses
   middleware/   Express middleware
   modules/      Assemble feature dependencies
+  ports/        Repository interfaces used by services
   repositories/ Encapsulate database access
   routes/       HTTP routes and router mounting
   schemas/      Zod request and response schemas
@@ -111,7 +113,7 @@ Requests follow this flow:
 route → controller → service → repository → sqlc → PostgreSQL
 ```
 
-When adding a resource, update the relevant `schemas`, `contracts`, `repositories`, `services`, `controllers`, `routes`, and `modules` layers. Add the migration and SQL query, then run `npm run db:generate`. Do not edit generated files under `src/database/sqlc` directly.
+When adding a resource, define its model and repository interface in `domain` and `ports`, then update the relevant `schemas`, `contracts`, `repositories`, `services`, `controllers`, `routes`, and `modules` layers. Add the migration and SQL query, then run `npm run db:generate`. Keep sqlc types inside the repository implementation; do not edit generated files under `src/database/sqlc` directly.
 
 ## Routes and OpenAPI
 

@@ -1,39 +1,47 @@
 import type { Sql } from 'postgres';
 import * as taskSql from '../database/sqlc/tasks_sql';
+import type { Task } from '../domain/task';
+import type { TaskRepository } from '../ports/taskRepository';
 
-export interface TaskPatch {
-  title?: string;
-  description?: string | null;
-  completed?: boolean;
-}
+type TaskRow =
+  | taskSql.ListTasksRow
+  | taskSql.GetTaskRow
+  | taskSql.CreateTaskRow
+  | taskSql.UpdateTaskRow;
 
-export interface TaskRepository {
-  findAll(): Promise<taskSql.ListTasksRow[]>;
-  findById(id: string): Promise<taskSql.GetTaskRow | null>;
-  create(input: taskSql.CreateTaskArgs): Promise<taskSql.CreateTaskRow>;
-  update(id: string, patch: TaskPatch): Promise<taskSql.UpdateTaskRow | null>;
-  delete(id: string): Promise<boolean>;
-}
+const toTask = (row: TaskRow): Task => ({
+  id: row.id,
+  title: row.title,
+  description: row.description,
+  completed: row.completed,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+});
 
 export const createTaskRepository = (sql: Sql): TaskRepository => ({
-  findAll: () => taskSql.listTasks(sql),
+  findAll: async () => (await taskSql.listTasks(sql)).map(toTask),
 
-  findById: (id) => taskSql.getTask(sql, { id }),
-
-  create: async (input) => {
-    const task = await taskSql.createTask(sql, input);
-    if (!task) throw new Error('Task was not returned after creation');
-    return task;
+  findById: async (id) => {
+    const row = await taskSql.getTask(sql, { id });
+    return row ? toTask(row) : null;
   },
 
-  update: (id, patch) =>
-    taskSql.updateTask(sql, {
+  create: async (input) => {
+    const row = await taskSql.createTask(sql, input);
+    if (!row) throw new Error('Task was not returned after creation');
+    return toTask(row);
+  },
+
+  update: async (id, patch) => {
+    const row = await taskSql.updateTask(sql, {
       id,
       title: patch.title ?? null,
       setDescription: patch.description !== undefined,
       description: patch.description ?? null,
       completed: patch.completed ?? null,
-    }),
+    });
+    return row ? toTask(row) : null;
+  },
 
   delete: async (id) => (await taskSql.deleteTask(sql, { id })) !== null,
 });

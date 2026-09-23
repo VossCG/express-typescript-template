@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { NotFoundError } from '../src/core/ApiError';
-import type * as TaskSql from '../src/database/sqlc/tasks_sql';
-import type { TaskRepository } from '../src/repositories/task';
+import { TaskNotFoundError } from '../src/domain/task';
+import type { Task } from '../src/domain/task';
+import type { TaskRepository } from '../src/ports/taskRepository';
 import { createTaskService } from '../src/services/task';
 
-const task: TaskSql.GetTaskRow = {
+const task: Task = {
   id: '1f547b90-9752-46d2-99f0-b1501518ce4b',
   title: 'Write tests',
   description: 'Cover the service layer',
@@ -75,16 +75,16 @@ describe('TaskService', () => {
     assert.deepEqual(receivedInput, { description: null, completed: false });
   });
 
-  it('throws NotFoundError when reading a missing task', async () => {
+  it('throws TaskNotFoundError when reading a missing task', async () => {
     const service = createTaskService(createFakeRepository({ findById: async () => null }));
 
-    await assert.rejects(service.getById(task.id), NotFoundError);
+    await assert.rejects(service.getById(task.id), TaskNotFoundError);
   });
 
-  it('throws NotFoundError when an update affects no task', async () => {
+  it('throws TaskNotFoundError when an update affects no task', async () => {
     const missingService = createTaskService(createFakeRepository({ update: async () => null }));
 
-    await assert.rejects(missingService.update(task.id, { title: 'New title' }), NotFoundError);
+    await assert.rejects(missingService.update(task.id, { title: 'New title' }), TaskNotFoundError);
   });
 
   it('uses the delete result to report a missing task without a prior read', async () => {
@@ -105,6 +105,6 @@ describe('TaskService', () => {
     assert.equal(deletedId, task.id);
 
     const missingService = createTaskService(createFakeRepository({ delete: async () => false }));
-    await assert.rejects(missingService.delete(task.id), NotFoundError);
+    await assert.rejects(missingService.delete(task.id), TaskNotFoundError);
   });
 });

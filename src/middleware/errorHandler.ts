@@ -3,6 +3,7 @@ import type { ErrorRequestHandler, RequestHandler } from 'express';
 import { env } from '../config/env';
 import { ApiError, NotFoundError } from '../core/ApiError';
 import logger from '../core/logger';
+import { TaskNotFoundError } from '../domain/task';
 
 export const notFound: RequestHandler = (req, _res, next) => {
   next(new NotFoundError(`Route ${req.method} ${req.originalUrl} not found`));
@@ -20,17 +21,19 @@ export const error: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
-  if (err instanceof ApiError) {
-    if (err.status >= 500) {
-      logger.error({ err, method: req.method, path: req.originalUrl });
+  const apiError = err instanceof TaskNotFoundError ? new NotFoundError(err.message) : err;
+
+  if (apiError instanceof ApiError) {
+    if (apiError.status >= 500) {
+      logger.error({ err: apiError, method: req.method, path: req.originalUrl });
     }
 
-    res.status(err.status).json({
+    res.status(apiError.status).json({
       success: false,
       error: {
-        code: err.code,
-        message: err.message,
-        ...(err.details === undefined ? {} : { details: err.details }),
+        code: apiError.code,
+        message: apiError.message,
+        ...(apiError.details === undefined ? {} : { details: apiError.details }),
       },
     });
     return;

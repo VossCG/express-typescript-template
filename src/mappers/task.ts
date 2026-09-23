@@ -1,13 +1,10 @@
-import type * as TaskSql from '../database/sqlc/tasks_sql';
+import type { Task } from '../domain/task';
 
-type TaskRow =
-  | TaskSql.ListTasksRow
-  | TaskSql.GetTaskRow
-  | TaskSql.CreateTaskRow
-  | TaskSql.UpdateTaskRow;
-
-export const toTaskResponse = (task: TaskRow) => ({
-  ...task,
+export const toTaskResponse = (task: Task) => ({
+  id: task.id,
+  title: task.title,
+  description: task.description,
+  completed: task.completed,
   createdAt: task.createdAt.toISOString(),
   updatedAt: task.updatedAt.toISOString(),
 });

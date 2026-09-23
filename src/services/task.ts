@@ -1,13 +1,11 @@
-import { NotFoundError } from '../core/ApiError';
-import type { TaskRepository } from '../repositories/task';
-import type * as TaskSql from '../database/sqlc/tasks_sql';
-import type * as TaskSchemas from '../schemas/task';
+import * as TaskDomain from '../domain/task';
+import type { TaskRepository } from '../ports/taskRepository';
 
 export interface TaskService {
-  list(): Promise<TaskSql.ListTasksRow[]>;
-  getById(id: string): Promise<TaskSql.GetTaskRow>;
-  create(input: TaskSchemas.CreateTaskInput): Promise<TaskSql.CreateTaskRow>;
-  update(id: string, input: TaskSchemas.UpdateTaskInput): Promise<TaskSql.UpdateTaskRow>;
+  list(): Promise<TaskDomain.Task[]>;
+  getById(id: string): Promise<TaskDomain.Task>;
+  create(input: TaskDomain.CreateTaskInput): Promise<TaskDomain.Task>;
+  update(id: string, input: TaskDomain.UpdateTaskInput): Promise<TaskDomain.Task>;
   delete(id: string): Promise<void>;
 }
 
@@ -16,7 +14,7 @@ export const createTaskService = (repository: TaskRepository): TaskService => ({
 
   getById: async (id) => {
     const task = await repository.findById(id);
-    if (!task) throw new NotFoundError('Task not found');
+    if (!task) throw new TaskDomain.TaskNotFoundError();
     return task;
   },
 
@@ -29,12 +27,12 @@ export const createTaskService = (repository: TaskRepository): TaskService => ({
   update: async (id, input) => {
     const task = await repository.update(id, input);
 
-    if (!task) throw new NotFoundError('Task not found');
+    if (!task) throw new TaskDomain.TaskNotFoundError();
     return task;
   },
 
   delete: async (id) => {
     const deleted = await repository.delete(id);
-    if (!deleted) throw new NotFoundError('Task not found');
+    if (!deleted) throw new TaskDomain.TaskNotFoundError();
   },
 });
