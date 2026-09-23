@@ -30,7 +30,8 @@ The default `DATABASE_URL` points to `localhost:5432/backend_template`. Do not c
 Available endpoints:
 
 - API: `http://localhost:3000`
-- Health check: `http://localhost:3000/health`
+- Liveness check: `http://localhost:3000/health`
+- Readiness check: `http://localhost:3000/health/ready`
 - Swagger UI: `http://localhost:3000/api-docs`
 
 The development command checks that Docker and PostgreSQL are ready before starting the API. Run `npm run db:generate` again after changing SQL queries.
@@ -41,10 +42,14 @@ Build and run the production API image:
 
 ```bash
 docker build -t express-typescript .
-docker run --rm --env-file .env -p 3000:3000 express-typescript
+docker run --rm --env-file /path/to/production.env -p 3000:3000 express-typescript
 ```
 
 The `compose.yaml` file is intended for local PostgreSQL development. Use a managed database and a secrets manager in production.
+
+For production, set `NODE_ENV=production`, a reachable `DATABASE_URL`, and `CORS_ORIGIN` to the exact browser origin (for example, `https://app.example.com`) or `none` for clients that do not use browser CORS. The server rejects `CORS_ORIGIN=*` in production. `/health` checks whether the HTTP process is running; `/health/ready` checks PostgreSQL and returns 503 when it is unavailable. The HTTP process can start while PostgreSQL is unavailable and becomes ready once the database recovers. Configure deployment probes accordingly.
+
+The Tasks CRUD endpoints and `/api-docs` are public in this starter template. CORS controls browser access across origins; it is not authentication. Add authentication and authorization appropriate to your application before exposing the example Tasks API on the internet.
 
 ## Common commands
 
@@ -153,7 +158,7 @@ mountOpenApiRouter(router, '/api/v1/widgets', widgetRoutes);
 | --- | --- | --- |
 | `NODE_ENV` | Runtime environment | `development` |
 | `PORT` | HTTP port | `3000` |
-| `CORS_ORIGIN` | Allowed origin | `*` |
+| `CORS_ORIGIN` | Exact browser origin, `none`, or development-only `*` | `*` in development; required in production |
 | `DATABASE_URL` | PostgreSQL connection string | See `.env.sample` |
 
 The credentials in Compose are for local development only. Use separate secure credentials in deployment.

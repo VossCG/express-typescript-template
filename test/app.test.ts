@@ -7,6 +7,7 @@ import express from 'express';
 import app from '../src/app';
 import { TaskNotFoundError } from '../src/domain/task';
 import { error } from '../src/middleware/errorHandler';
+import { generateOpenApiDocument } from '../src/swagger';
 
 describe('HTTP application', () => {
   it('serves the health endpoint with the standard success envelope', async () => {
@@ -30,6 +31,7 @@ describe('HTTP application', () => {
 
     assert.equal(response.status, 200);
     assert.match(response.headers['content-type'], /text\/html/);
+    assert.ok(generateOpenApiDocument().paths['/health/ready']?.get?.responses['503']);
   });
 
   it('rejects invalid task input before reaching the database', async () => {

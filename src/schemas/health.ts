@@ -5,3 +5,7 @@ export const healthSchema = z.object({
   timestamp: z.string().datetime(),
   uptime: z.number().nonnegative(),
 });
+
+export const readinessSchema = z.object({
+  status: z.literal('ready'),
+});

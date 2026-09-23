@@ -16,6 +16,10 @@ describe('Tasks with PostgreSQL', () => {
     `;
     assert.equal(migrations.length, 1);
 
+    const readiness = await request(app).get('/health/ready');
+    assert.equal(readiness.status, 200);
+    assert.equal(readiness.body.data.status, 'ready');
+
     const created = await request(app)
       .post('/api/v1/tasks')
       .send({ title: 'Integration task', description: 'Original description' });

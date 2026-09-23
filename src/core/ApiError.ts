@@ -21,3 +21,12 @@ export class NotFoundError extends ApiError {
     super(404, 'NOT_FOUND', message);
   }
 }
+
+export class ServiceUnavailableError extends ApiError {
+  override cause: unknown;
+
+  constructor(message = 'Service unavailable', options?: ErrorOptions) {
+    super(503, 'SERVICE_UNAVAILABLE', message);
+    this.cause = options?.cause;
+  }
+}

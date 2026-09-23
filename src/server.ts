@@ -4,10 +4,7 @@ import { env } from './config/env';
 import logger from './core/logger';
 import * as db from './database';
 
-const start = async (): Promise<void> => {
-  await db.check();
-  logger.info('Database connection established');
-
+const start = (): void => {
   const server = http.createServer(app);
 
   server.listen(env.PORT, () => {
@@ -47,7 +44,9 @@ const start = async (): Promise<void> => {
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 };
 
-start().catch((err) => {
+try {
+  start();
+} catch (err) {
   logger.fatal({ err }, 'Application startup failed');
   process.exit(1);
-});
+}

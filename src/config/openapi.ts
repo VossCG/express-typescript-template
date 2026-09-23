@@ -34,4 +34,8 @@ export const errorResponses = {
     description: 'Internal server error',
     content: { 'application/json': { schema: errorResponseSchema } },
   },
+  503: {
+    description: 'Service unavailable',
+    content: { 'application/json': { schema: errorResponseSchema } },
+  },
 };
