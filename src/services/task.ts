@@ -27,23 +27,14 @@ export const createTaskService = (repository: TaskRepository): TaskService => ({
     }),
 
   update: async (id, input) => {
-    const current = await repository.findById(id);
-    if (!current) throw new NotFoundError('Task not found');
-
-    const task = await repository.update({
-      id: current.id,
-      title: input.title ?? current.title,
-      description: input.description === undefined ? current.description : input.description,
-      completed: input.completed ?? current.completed,
-    });
+    const task = await repository.update(id, input);
 
     if (!task) throw new NotFoundError('Task not found');
     return task;
   },
 
   delete: async (id) => {
-    const task = await repository.findById(id);
-    if (!task) throw new NotFoundError('Task not found');
-    await repository.delete(task.id);
+    const deleted = await repository.delete(id);
+    if (!deleted) throw new NotFoundError('Task not found');
   },
 });

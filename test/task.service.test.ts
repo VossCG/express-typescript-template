@@ -19,8 +19,8 @@ const createFakeRepository = (overrides: Partial<TaskRepository> = {}): TaskRepo
   findAll: async () => [task],
   findById: async () => task,
   create: async (input) => ({ ...task, ...input }),
-  update: async (input) => ({ ...task, ...input }),
-  delete: async () => undefined,
+  update: async (_id, input) => ({ ...task, ...input }),
+  delete: async () => true,
   ...overrides,
 });
 
@@ -52,10 +52,15 @@ describe('TaskService', () => {
     assert.equal(result.description, null);
   });
 
-  it('merges a partial update without losing false or null values', async () => {
-    let receivedInput: Parameters<TaskRepository['update']>[0] | undefined;
+  it('passes a partial update directly to the repository without a prior read', async () => {
+    let receivedId: string | undefined;
+    let receivedInput: Parameters<TaskRepository['update']>[1] | undefined;
     const repository = createFakeRepository({
-      update: async (input) => {
+      findById: async () => {
+        throw new Error('Update must not read the task first');
+      },
+      update: async (id, input) => {
+        receivedId = id;
         receivedInput = input;
         return { ...task, ...input };
       },
@@ -66,12 +71,8 @@ describe('TaskService', () => {
       completed: false,
     });
 
-    assert.deepEqual(receivedInput, {
-      id: task.id,
-      title: task.title,
-      description: null,
-      completed: false,
-    });
+    assert.equal(receivedId, task.id);
+    assert.deepEqual(receivedInput, { description: null, completed: false });
   });
 
   it('throws NotFoundError when reading a missing task', async () => {
@@ -80,20 +81,22 @@ describe('TaskService', () => {
     await assert.rejects(service.getById(task.id), NotFoundError);
   });
 
-  it('throws NotFoundError when updating a missing or concurrently deleted task', async () => {
-    const missingService = createTaskService(createFakeRepository({ findById: async () => null }));
-    const deletedService = createTaskService(createFakeRepository({ update: async () => null }));
+  it('throws NotFoundError when an update affects no task', async () => {
+    const missingService = createTaskService(createFakeRepository({ update: async () => null }));
 
     await assert.rejects(missingService.update(task.id, { title: 'New title' }), NotFoundError);
-    await assert.rejects(deletedService.update(task.id, { title: 'New title' }), NotFoundError);
   });
 
-  it('checks existence before deleting and rejects a missing task', async () => {
+  it('uses the delete result to report a missing task without a prior read', async () => {
     let deletedId: string | undefined;
     const service = createTaskService(
       createFakeRepository({
+        findById: async () => {
+          throw new Error('Delete must not read the task first');
+        },
         delete: async (id) => {
           deletedId = id;
+          return true;
         },
       }),
     );
@@ -101,7 +104,7 @@ describe('TaskService', () => {
     await service.delete(task.id);
     assert.equal(deletedId, task.id);
 
-    const missingService = createTaskService(createFakeRepository({ findById: async () => null }));
+    const missingService = createTaskService(createFakeRepository({ delete: async () => false }));
     await assert.rejects(missingService.delete(task.id), NotFoundError);
   });
 });

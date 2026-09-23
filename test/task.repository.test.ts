@@ -65,17 +65,24 @@ describe('TaskRepository', () => {
     assert.deepEqual(createFake.calls[0].parameters, [row[1], row[2]]);
 
     const updateFake = createFakeSql([row]);
-    await createTaskRepository(updateFake.sql).update({
-      id: row[0] as string,
-      title: row[1] as string,
+    await createTaskRepository(updateFake.sql).update(row[0] as string, {
       description: null,
-      completed: true,
+      completed: false,
     });
-    assert.deepEqual(updateFake.calls[0].parameters, [row[0], row[1], null, true]);
+    assert.deepEqual(updateFake.calls[0].parameters, [null, true, null, false, row[0]]);
 
-    const deleteFake = createFakeSql([]);
-    await createTaskRepository(deleteFake.sql).delete(row[0] as string);
+    const titleUpdateFake = createFakeSql([row]);
+    await createTaskRepository(titleUpdateFake.sql).update(row[0] as string, {
+      title: 'New title',
+    });
+    assert.deepEqual(titleUpdateFake.calls[0].parameters, ['New title', false, null, null, row[0]]);
+
+    const deleteFake = createFakeSql([[row[0]]]);
+    assert.equal(await createTaskRepository(deleteFake.sql).delete(row[0] as string), true);
     assert.deepEqual(deleteFake.calls[0].parameters, [row[0]]);
+
+    const missingDeleteFake = createFakeSql([]);
+    assert.equal(await createTaskRepository(missingDeleteFake.sql).delete(row[0] as string), false);
   });
 
   it('rejects an insert that does not return a task', async () => {

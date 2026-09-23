@@ -1,12 +1,18 @@
 import type { Sql } from 'postgres';
 import * as taskSql from '../database/sqlc/tasks_sql';
 
+export interface TaskPatch {
+  title?: string;
+  description?: string | null;
+  completed?: boolean;
+}
+
 export interface TaskRepository {
   findAll(): Promise<taskSql.ListTasksRow[]>;
   findById(id: string): Promise<taskSql.GetTaskRow | null>;
   create(input: taskSql.CreateTaskArgs): Promise<taskSql.CreateTaskRow>;
-  update(input: taskSql.UpdateTaskArgs): Promise<taskSql.UpdateTaskRow | null>;
-  delete(id: string): Promise<void>;
+  update(id: string, patch: TaskPatch): Promise<taskSql.UpdateTaskRow | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export const createTaskRepository = (sql: Sql): TaskRepository => ({
@@ -20,7 +26,14 @@ export const createTaskRepository = (sql: Sql): TaskRepository => ({
     return task;
   },
 
-  update: (input) => taskSql.updateTask(sql, input),
+  update: (id, patch) =>
+    taskSql.updateTask(sql, {
+      id,
+      title: patch.title ?? null,
+      setDescription: patch.description !== undefined,
+      description: patch.description ?? null,
+      completed: patch.completed ?? null,
+    }),
 
-  delete: (id) => taskSql.deleteTask(sql, { id }),
+  delete: async (id) => (await taskSql.deleteTask(sql, { id })) !== null,
 });

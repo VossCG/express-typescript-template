@@ -1,4 +1,4 @@
-import type { Sql } from 'postgres';
+import { Sql } from 'postgres';
 
 export const listTasksQuery = `-- name: ListTasks :many
 SELECT id, title, description, completed, created_at, updated_at
@@ -96,18 +96,20 @@ export async function createTask(sql: Sql, args: CreateTaskArgs): Promise<Create
 
 export const updateTaskQuery = `-- name: UpdateTask :one
 UPDATE tasks
-SET title = $2,
-    description = $3,
-    completed = $4,
+SET title = COALESCE($1::text, title),
+    description = CASE WHEN $2::boolean
+      THEN $3::text ELSE description END,
+    completed = COALESCE($4::boolean, completed),
     updated_at = NOW()
-WHERE id = $1
+WHERE id = $5
 RETURNING id, title, description, completed, created_at, updated_at`;
 
 export interface UpdateTaskArgs {
-  id: string;
-  title: string;
+  title: string | null;
+  setDescription: boolean;
   description: string | null;
-  completed: boolean;
+  completed: boolean | null;
+  id: string;
 }
 
 export interface UpdateTaskRow {
@@ -121,7 +123,13 @@ export interface UpdateTaskRow {
 
 export async function updateTask(sql: Sql, args: UpdateTaskArgs): Promise<UpdateTaskRow | null> {
   const rows = await sql
-    .unsafe(updateTaskQuery, [args.id, args.title, args.description, args.completed])
+    .unsafe(updateTaskQuery, [
+      args.title,
+      args.setDescription,
+      args.description,
+      args.completed,
+      args.id,
+    ])
     .values();
   if (rows.length !== 1) {
     return null;
@@ -137,14 +145,26 @@ export async function updateTask(sql: Sql, args: UpdateTaskArgs): Promise<Update
   };
 }
 
-export const deleteTaskQuery = `-- name: DeleteTask :exec
+export const deleteTaskQuery = `-- name: DeleteTask :one
 DELETE FROM tasks
-WHERE id = $1`;
+WHERE id = $1
+RETURNING id`;
 
 export interface DeleteTaskArgs {
   id: string;
 }
 
-export async function deleteTask(sql: Sql, args: DeleteTaskArgs): Promise<void> {
-  await sql.unsafe(deleteTaskQuery, [args.id]);
+export interface DeleteTaskRow {
+  id: string;
+}
+
+export async function deleteTask(sql: Sql, args: DeleteTaskArgs): Promise<DeleteTaskRow | null> {
+  const rows = await sql.unsafe(deleteTaskQuery, [args.id]).values();
+  if (rows.length !== 1) {
+    return null;
+  }
+  const row = rows[0];
+  return {
+    id: row[0],
+  };
 }
